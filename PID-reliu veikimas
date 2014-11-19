@@ -1,0 +1,31 @@
+I'm just going to throw the time-proprtioning code in the email so I can talk about it context.  
+let me explain the basics and we can go from there
+
+1  unsigned long now = millis();
+2  if(now - windowStartTime>WindowSize)
+3  { //time to shift the Relay Window
+4    windowStartTime += WindowSize;
+5  }
+6  if(Output > now - windowStartTime) digitalWrite(RelayPin,HIGH);
+7  else digitalWrite(RelayPin,LOW);
+
+in addition to this code, notice that earlier in the example we called SetOutputLimits(0,windowSize).  
+this told the pid to vary it's output between 0-5000.  "plate to hot? make Output smaller.  too cold, 
+make Output bigger.  but you need to keep the value between 0 and 5000."
+
+there's two parts to this code.  lines 2-5 ratchet up the value of window startTime, 
+and lines 6 and 7 determine if the Relay should be on or off.  let's do lines 6-7 first.     
+Let's assume that the PID has settled on an Output value of 1250.   let's also assume that we've been 
+running for 56.100 seconds (millis()=56100,) which means windowStartTime is 55000.  
+Is the relay high or low?  now-windowStartTime = 1100.  Output = 1250.  that means relay is HIGH, 
+and will continue to be for another 150mSec.  at that point Output will no longer be greater than 
+now-windowstartTime, and it will switch to Low.    so, for this example  relay was HIGH from the 
+start of the window until 1250 mSec had elapsed, then it was LOW for the rest.  if Output had been bigger, 
+the relay would have been on for a larger percentage of the window.
+
+All of the above relies on the fact that now-windowStartTime is always between 0-5000.  
+that's where lines 2-5 come in.  as soon as that grows beyond 5000 (windowSize,)  
+the windowStartTime is increased by 5000, starting a new time window.
+
+kind of a long-winded explanation.  I'm operating on far less sleep than normal, so I'm not even sure 
+if that clears things up.  hopefully it will at least give you enough to be able to ask more questions. 

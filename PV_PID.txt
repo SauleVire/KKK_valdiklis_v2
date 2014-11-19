@@ -1,0 +1,83 @@
+/* ********** kintamieji Pamai�ymo vo�tuvui *******************
+byte pv_palaikoma_T = 40; // PV palaikoma temperatura
+byte pv_atidarymo_T = 30; // PV palaikoma temperatura
+byte PV_rankinis_ijungimas = 0; // �yme rankiniam PV valdymui
+boolean PV_uzdarytas = true;
+boolean PV_atidarytas = false;
+boolean PV_atidarinejamas = false;
+boolean PV_uzdarinejamas = false;
+boolean PV_stop = true;
+************************************************************************
+#define PV_pilno_atidarymo_trukme 2500
+unsigned long PV_pilno_atidarymo_laikas;
+unsigned long PV_darinejimo_laikas;
+/* *********** PAMAISYMO VOZTUVO SIURBLIO IJUNGIMAS ******************** */
+void PamaisymoVoztuvoSiusblys(){
+if ((KI > pv_ON_T || AV > pv_ON_T) && (PV_siurblys == false)){ // Jei katilo i�ejime temperatura pakyla iki u�duotos
+    digitalWrite(PVsiurblys, LOW); // siurblys ijungiamas
+    PV_siurblys = true; // pa�ymima, kad siurblys veikia
+#ifdef DEBUGpv
+Serial.print("PV ijungimo temperatura- ");Serial.print(pv_ON_T);Serial.print(char(186));Serial.println("C");
+Serial.println("Pamaisymo voztuvo siublys IJUNGTAS *** ON ***");
+#endif
+}
+    if ((KI < pv_ON_T) && (AV < pv_ON_T) && (PV_siurblys == true)){ // Jei katilo i�ejime temperatura pakyla �emiau u�duotos
+        digitalWrite(PVsiurblys, HIGH); // siurblys i�jungiamas
+        PV_siurblys = false; // pa�ymima, kad siurblys neveikia
+#ifdef DEBUGpv
+Serial.print("PV isjungimo temperatura- ");Serial.print(pv_OFF_T);Serial.print(char(186));Serial.println("C");
+Serial.println("Pamaisymo voztuvo siublys ISJUNGTAS *** OFF ***");
+#endif
+    }
+}
+
+void PV_darbas_PID()
+{
+Input = PV;
+PV_PID.Compute();
+
+/************************************************
+* turn the output pin on/off based on pid output
+************************************************/
+if(millis() - windowStartTime>WindowSize)
+{ //time to shift the Relay Window
+windowStartTime += WindowSize;
+}
+if(Output==0)
+
+{ //PID thinks we shouldn't activate either relay. Do nothing
+digitalWrite(PVuzdarymas, HIGH);
+digitalWrite(PVatidarymas, HIGH);
+#ifdef DEBUGpv
+Serial.println("Pamaisymo voztuvas, PUSIAUSVYROS PAUZE *** START ***"); 
+#endif
+}
+else if(Output>0)
+
+{ //Pid thinks we should be activating PVatidarymas
+if(Output > millis() - windowStartTime){
+  digitalWrite(PVatidarymas,LOW);
+#ifdef DEBUGpv
+Serial.println("Pamaisymo voztuvas, pradetas ATIDARINEJIMAS"); 
+Serial.print("Input- "); Serial.println(Input);
+Serial.print("Output- "); Serial.println(Output);
+#endif
+}
+
+else digitalWrite(PVatidarymas,HIGH);
+digitalWrite(PVuzdarymas,HIGH);
+}
+else //PID thinks we should be activating PVuzidarymas
+{
+if(-Output > millis() - windowStartTime) {
+  digitalWrite(PVuzdarymas,LOW);
+#ifdef DEBUGpv
+Serial.println("Pamaisymo voztuvas, pradetas UZDARINEJIMAS"); 
+#endif
+    }
+else digitalWrite(PVuzdarymas,HIGH);
+digitalWrite(PVatidarymas,HIGH);
+}
+
+}
+
