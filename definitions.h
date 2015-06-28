@@ -49,12 +49,8 @@ int SavaitesDiena;
 int MenesioDiena;
 int Menuo;
 int Metai;
-byte Aliarmas_1_hh =5;  //Aliarmas 1 valanda ijungimui
-byte Aliarmas_1_mm =30;  //Aliarmas 1 minute ijungimui
-byte Aliarmas_1_on =2;  //Aliarmas 1 ijungtas-1 , isjungtas-2
-
 /* ************** LKLAVIATUROS KINTAMIEJI ************************************* */
-#define Key_Pin 15
+#define Key_Pin 3 //Analogines klaviaturos pajungimo i6vadas A3
 volatile int klaviaturos_pasikeitimas =-1;               // Tikrinti ar pasikeitė klaviatūros reikšmė
 volatile int x=-1;                 // 
 volatile int stan_Analog;          // 

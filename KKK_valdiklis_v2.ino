@@ -13,23 +13,21 @@
 //    #include <EEPROM.h>
 //     #include <PID_v1.h>
 #include "definitions.h"
-//#include <EtherCard.h>
-//#define STATIC 1  // set to 1 to disable DHCP (adjust myip/gwip values below)
+#include <EtherCard.h>
+#define STATIC 1  // set to 1 to disable DHCP (adjust myip/gwip values below)
 
-//#if STATIC
+#if STATIC
 // ethernet interface ip address
-//static byte myip[] = { 192,168,1,3 };
+static byte myip[] = { 192,168,1,3 };
 // gateway ip address
-//static byte gwip[] = { 192,168,1,254 };
-//#endif
+static byte gwip[] = { 192,168,1,254 };
+#endif
 
 // ethernet mac address - must be unique on your network
-//static byte mymac[] = { 0x11,0x22,0x33,0x44,0x55,0x66 };
+static byte mymac[] = { 0x11,0x22,0x33,0x44,0x55,0x66 };
 
-//byte Ethernet::buffer[500]; // tcp/ip send and receive buffer
-//unsigned long Ethernet_timer;
-
-AlarmID_t Aliarmas_1; // the alarm id so you can change the period on the fly
+byte Ethernet::buffer[500]; // tcp/ip send and receive buffer
+unsigned long Ethernet_timer;
 
   #define ONE_WIRE_BUS4 42
 //Define Variables we'll be connecting to
@@ -49,7 +47,7 @@ uint8_t arrowUp[8]={ B00100,B01110,B11111,B00100,B00100,B00100,B00100,B00100};
     // definicja pinów dla LCD (sprawdź piny w swoim LCD)
 LiquidCrystal lcd(26, 24, 22, 23, 25, 27, 29);
 /* ------------------ R T C ---------------------- */
-boolean bBlink = true;
+
 
 /* --------------------- RTC PABAIGA ---------------- */
 char *eilute1;                      // pierwsza eilute wyświetlanego tekstu na LCD
@@ -84,9 +82,9 @@ char *eilute3;
 MenuBackend menu = MenuBackend(menuUseEvent,menuChangeEvent); // konstruktor 
    //                        ("                ")
    MenuItem P1 =  MenuItem("NUSTATYMAI        ",1);
-      MenuItem P11 = MenuItem("Pasvietimas",2);
-      MenuItem P12 = MenuItem("Irasymas",2);
-      MenuItem P13 = MenuItem("Numatytos reiksmes",2);
+      MenuItem P11 = MenuItem("Irasymas",2);
+      MenuItem P12 = MenuItem("Numatytos reiksmes",2);
+      MenuItem P13 = MenuItem("Pasvietimas",2);
       MenuItem P14 = MenuItem("Metai",2);
       MenuItem P15 = MenuItem("Menuo",2);
       MenuItem P16 = MenuItem("Diena",2);
@@ -106,9 +104,6 @@ MenuBackend menu = MenuBackend(menuUseEvent,menuChangeEvent); // konstruktor
       MenuItem P42 = MenuItem("B isjungimo temp.",2);
       MenuItem P43 = MenuItem("B rankinis vald.",2);
       MenuItem P44 = MenuItem("B termostatas   ",2);
-      MenuItem P45 = MenuItem("Alarmas HH",2);
-      MenuItem P46 = MenuItem("Alarmas MM",2);
-      MenuItem P47 = MenuItem("Alarmas on/off",2);
    MenuItem P5 = MenuItem("PAMAISYMO VOZTUVAS",1);
       MenuItem P51 = MenuItem("Darbo Rezimas     ",2);
       MenuItem P52 = MenuItem("PV palaikoma temp.",2);
@@ -149,18 +144,15 @@ void menuSetup()                       // funkcja klasy MenuBackend
         P32.add(P33);P32.addLeft(P3);
         P33.add(P34);P33.addLeft(P3);
         P34.add(P31);P34.addLeft(P3);    //        
-      menu.getRoot().add(P4);
+      menu.getRoot().add(P5);
       P3.addRight(P4);
       
       P4.add(P41);
         P41.add(P42);P41.addLeft(P4);
         P42.add(P43);P42.addLeft(P4);
         P43.add(P44);P43.addLeft(P4);
-        P44.add(P45);P44.addLeft(P4);
-        P45.add(P46);P45.addLeft(P4);
-        P46.add(P47);P46.addLeft(P4);
-        P47.add(P41);P47.addLeft(P4);
-      menu.getRoot().add(P5);
+        P44.add(P41);P44.addLeft(P4);
+      menu.getRoot().add(P1);
       P4.addRight(P5);
       
       P5.add(P51);
@@ -244,9 +236,6 @@ void menuUseEvent(MenuUseEvent used)      // funkcja klasy MenuBackend - reakcja
        pv_palaikoma_riba_T = 1.5; // Pamaišymo vožtuvo palaikomos temperatūros riba
        PV_pauzes_pertrauka = 200;
        PV_darinejimas = 60;
-       Aliarmas_1_hh = 0;
-       Aliarmas_1_mm = 0;
-       Aliarmas_1_on = 2;
        SaveConfig();
                  lcd.setCursor(0,2);lcd.print("Pradines reiksmes OK");delay(2000); // pokazujemy OK przez 2 sek.
                  lcd.setCursor(0,2);lcd.print("                    "); // czyścimy linię
@@ -576,117 +565,6 @@ if (B_termostat_ON == true) Serial.println("I_J_U_N_G_T_A_S"); else Serial.print
          } klaviaturos_pasikeitimas=veiksmas;  // aktualizacja klaviaturos_pasikeitimasiennej klaviaturos_pasikeitimas, po to aby reagować tylko na klaviaturos_pasikeitimasiany stanu klawiatury
          
       } 
-/* _____________________ BOILERIS Laikrodis Alarmas HH ____________ */
-              if (used.item.getName() == "Alarmas HH")   // dokładnie taki sam ciąg " Temperatura"
-      { lcd.setCursor(0,2);lcd.write(7); 
-//        lcd.setCursor(1,2);lcd.print("Minute        -   "); // tekst dla użytkownika
-        lcd.setCursor(0,2);if(Aliarmas_1_hh < 10) lcd.print('0');lcd.print(Aliarmas_1_hh); 
-        lcd.print(':');     if(Aliarmas_1_mm < 10) lcd.print('0');lcd.print(Aliarmas_1_mm);lcd.setCursor(2,2);lcd.blink();
-        
-        int  veiksmas=-1;delay(1000);         // klaviaturos_pasikeitimasienna pomocnicza, sterująca dla petli while
-                                           // jesli nie puścisz klawisza OK w ciągu 1 sek. to powrót do menu    
-        while(veiksmas!=4)                   // ta pętla trwa tak długo aż wciśniesz klawisz OK  
-         {
-           klaviaturos_pasikeitimas=-1; 
-           veiksmas=Klaviaturos_skaitymas(Key_Pin); //delay(300);   // odczyt stanu klawiatury - funkcja Klaviaturos_skaitymas lub czytaj_2 lub czytaj_3
-                                            // opis poniżej przy 3 różnych definicjach funkcji czytaj
-           if(klaviaturos_pasikeitimas!=veiksmas)                    // ruszamy do pracy tylko wtedy gdy klaviaturos_pasikeitimasienił sie stan klawiatury
-             {
-             if(veiksmas==1) {Aliarmas_1_hh ++; if(Aliarmas_1_hh>23) Aliarmas_1_hh=0; lcd.setCursor(0,2); if(Aliarmas_1_hh < 10) lcd.print('0'); lcd.print(Aliarmas_1_hh) ;delay(200);}
-             if(veiksmas==2) {Aliarmas_1_hh --; if(Aliarmas_1_hh>24) Aliarmas_1_hh=23; lcd.setCursor(0,2); if(Aliarmas_1_hh < 10) lcd.print('0'); lcd.print(Aliarmas_1_hh) ;delay(200);}
-             if(veiksmas==4) // jeśli wciśnieto OK 
-               {
-                 lcd.noBlink();lcd.setCursor(6,2);lcd.print(">HH         OK");delay(2000); // pokazujemy OK przez 2 sek.
-                 lcd.setCursor(0,2);lcd.print("                    "); 
-                 lcd.setCursor(1,0);lcd.print(eilute1);           // odtwarzamy poprzedni stan na LCD
-                 time_t newStart = AlarmHMS(Aliarmas_1_hh,Aliarmas_1_mm,01);
-                 Alarm.disable (Aliarmas_1);
-                 Alarm.free (Aliarmas_1);
-                 Aliarmas_1 = Alarm.alarmRepeat(newStart, Boilerio_Termostatas_1);
-                 menu.moveDown();
-               }
-             } 
-         } klaviaturos_pasikeitimas=veiksmas;  // aktualizacja klaviaturos_pasikeitimasiennej klaviaturos_pasikeitimas, po to aby reagować tylko na klaviaturos_pasikeitimasiany stanu klawiatury
-         
-      } 
-/* _____________________ BOILERIS Laikrodis Alarmas MM ____________ */
-              if (used.item.getName() == "Alarmas MM")   // dokładnie taki sam ciąg " Temperatura"
-      { lcd.setCursor(0,2);lcd.write(7); 
-//        lcd.setCursor(1,2);lcd.print("Minute        -   "); // tekst dla użytkownika
-        lcd.setCursor(0,2);if(Aliarmas_1_hh < 10) lcd.print('0');lcd.print(Aliarmas_1_hh); 
-        lcd.print(':');     if(Aliarmas_1_mm < 10) lcd.print('0');lcd.print(Aliarmas_1_mm);lcd.setCursor(5,2);lcd.blink();
-        
-        int  veiksmas=-1;delay(1000);         // klaviaturos_pasikeitimasienna pomocnicza, sterująca dla petli while
-                                           // jesli nie puścisz klawisza OK w ciągu 1 sek. to powrót do menu    
-        while(veiksmas!=4)                   // ta pętla trwa tak długo aż wciśniesz klawisz OK  
-         {
-           klaviaturos_pasikeitimas=-1; 
-           veiksmas=Klaviaturos_skaitymas(Key_Pin); //delay(300);   // odczyt stanu klawiatury - funkcja Klaviaturos_skaitymas lub czytaj_2 lub czytaj_3
-                                            // opis poniżej przy 3 różnych definicjach funkcji czytaj
-           if(klaviaturos_pasikeitimas!=veiksmas)                    // ruszamy do pracy tylko wtedy gdy klaviaturos_pasikeitimasienił sie stan klawiatury
-             {
-             if(veiksmas==1) {Aliarmas_1_mm ++; if(Aliarmas_1_mm>59) Aliarmas_1_mm= 0; lcd.setCursor(3,2); if(Aliarmas_1_mm < 10) lcd.print('0'); lcd.print(Aliarmas_1_mm) ;delay(200);}
-             if(veiksmas==2) {Aliarmas_1_mm --; if(Aliarmas_1_mm>60) Aliarmas_1_mm=59; lcd.setCursor(3,2); if(Aliarmas_1_mm < 10) lcd.print('0'); lcd.print(Aliarmas_1_mm) ;delay(200);}
-             if(veiksmas==4) // jeśli wciśnieto OK 
-               {
-                 lcd.noBlink();lcd.setCursor(6,2);lcd.print(">MM         OK");delay(2000); // pokazujemy OK przez 2 sek.
-                 lcd.setCursor(0,2);lcd.print("                    "); 
-                 
-                 lcd.setCursor(1,0);lcd.print(eilute1);           // odtwarzamy poprzedni stan na LCD
-                 time_t newStart = AlarmHMS(Aliarmas_1_hh,Aliarmas_1_mm,02);
-//                 Alarm.write(Aliarmas_1, newStart);
-//                 Alarm.enable (Aliarmas_1);
-                 Alarm.disable (Aliarmas_1);
-                 Alarm.free (Aliarmas_1);
-                 Aliarmas_1 = Alarm.alarmRepeat(newStart, Boilerio_Termostatas_1);
-                 menu.moveDown();
-               }
-             } 
-         } klaviaturos_pasikeitimas=veiksmas;  // aktualizacja klaviaturos_pasikeitimasiennej klaviaturos_pasikeitimas, po to aby reagować tylko na klaviaturos_pasikeitimasiany stanu klawiatury
-         
-      } 
-/* _____________________ BOILERIS Laikrodis Alarmas on/off ____________ */
-     if (used.item.getName() == "Alarmas on/off")   // 
-      {
-        lcd.setCursor(0,2);
-        if (Aliarmas_1_on == 1) lcd.println(">Ijungta           ");
-        if (Aliarmas_1_on == 2) lcd.println(">Isjungta          ");
- 
-int  veiksmas=-1;delay(1000);         // klaviaturos_pasikeitimasienna pomocnicza, sterujaca dla petli while
-                                           // jesli nie puscisz klawisza OK w ciagu 1 sek. to powrót do menu    
-        while(veiksmas!=4)                   // ta petla trwa tak dlugo az wcisniesz klawisz OK  
-         {
-           klaviaturos_pasikeitimas=-1; 
-           veiksmas=Klaviaturos_skaitymas(Key_Pin); //delay(300);   // odczyt stanu klawiatury - funkcja Klaviaturos_skaitymas lub czytaj_2 lub czytaj_3
-                                            // opis ponizej przy 3 róznych definicjach funkcji czytaj
-           if(klaviaturos_pasikeitimas!=veiksmas)                    // ruszamy do pracy tylko wtedy gdy klaviaturos_pasikeitimasienil sie stan klawiatury
-             {
-             if (veiksmas==1) {Aliarmas_1_on++; lcd.setCursor(0,2);if (Aliarmas_1_on > 1) 
-                                                                            {Aliarmas_1_on = 2; 
-                                                                             lcd.print(">Isjungta          ");
-                                                                             delay(200);
-                                                                            }
-                               }
-             if (veiksmas==2) {Aliarmas_1_on--; lcd.setCursor(0,2);if (Aliarmas_1_on < 2) 
-                                                                            {Aliarmas_1_on = 1; 
-                                                                             lcd.print(">Ijungta           ");
-                                                                             delay(200);
-                                                                            }
-                              }
-             if (veiksmas==4) // jesli wcisnieto OK 
-               {
-                 lcd.setCursor(10,2);lcd.print("Irasyta OK");delay(2000); // pokazujemy OK przez 2 sek.
-                 lcd.setCursor(0,2);lcd.print("                    "); // czyscimy linie
-                 menu.moveDown();
-#ifdef DEBUGAliarmas_1
-Serial.print("Aliarmas_1_on- ");  Serial.println(Aliarmas_1_on); delay(5000);
-#endif
-             }
-             } 
-         } klaviaturos_pasikeitimas=veiksmas;  // aktualizacja klaviaturos_pasikeitimasiennej klaviaturos_pasikeitimas, po to aby reagowac tylko na klaviaturos_pasikeitimasiany stanu klawiatury
-         
-      }     
- 
          
 /* _____________________ PAMAIŠYMO VOŽTUVO PALAIKOMA TEMPERATURA ____________ */
 ///////
@@ -941,9 +819,6 @@ Serial.println("--------------------");
     PV_atidarinejamas = false;
  //////////////////////// LAIKRODIS ///////////////////////////
 setSyncProvider(RTC.get); 
-setSyncInterval(600);
-Aliarmas_1 = Alarm.alarmRepeat(Aliarmas_1_hh, Aliarmas_1_mm, 0, Boilerio_Termostatas_1);
-
   }  // setup() ...************ PABAIGA **************...
   // ************************ PROGRAMOS PRADZIA void loop() *******************************
 void loop()    
@@ -988,9 +863,6 @@ Serial.println("************ temperaturu parodymas ********************");
   LCD_T_sablonas();
   Temperaturu_vaizdavimas();
 
-showAlarmTime(Aliarmas_1);Serial.println();
-Serial.print(hour());Serial.print(':');Serial.print(minute());Serial.print(':');Serial.println(second());
-
   //#ifdef DEBUGds18b20
 //Serial.println("Temperaturu_matavimas");
 //unsigned long start = millis();
@@ -1014,7 +886,6 @@ if (PV_stop == true) {Serial.println("Pamaisymo voztuvas NEJUDA");
 //if (PV_uzdarinejamas = false) Serial.println("Pamaisymo voztuvas, uzdarymas- NEBEJUDA"); else Serial.println("Pamaisymo voztuvas UZDARINEJAMAS");
 
 #endif
-
   }
 } 
 // Tikrinama ar rankiniu budu neijungtas AKUMULIACINĖS TALPOS ar BOILERIO  siurblys
@@ -1025,7 +896,7 @@ Akumuliacine_talpa();
    if (millis()> Boilerio_siurblio_ijungimo_laikas ){
 Serial.println("************ vykdoma programa Boileris() ********************");
   Boileris();
-//  Boilerio_termostatas();
+  Boilerio_termostatas();
   Boilerio_siurblio_ijungimo_laikas=millis() + Boilerio_siurblio_pertrauka;}
   //***********************************
 //  if (millis() > temperaturu_matavimo_laikas_3 ) { 
@@ -1065,51 +936,22 @@ if (PV_rezimas == 2){
 if (MV_K == false & KI <= pv_OFF_T & AV <= pv_OFF_T) 
   {}
 // matuojamos temperatūros nurodytais laiko intervalais (temperaturu_matavimo_pertrauka)
-/* +++++++++++++++++++++++++++ PIRMAS LYGIS ++++++++++++++++++++++++++++++++++++ 
-Katilo išėjimas, pamaišymo vožtuvas, saulės kolektorius                         */ 
+/* +++++++++++++++++++++++++++ PIRMAS LYGIS ++++++++++++++++++++++++++++++++++++ */ 
 if (millis() > temperaturu_matavimo_laikas_1 ) { 
   temperaturu_matavimo_laikas_1 = millis() + temperaturu_matavimo_pertrauka_1;
   Temperaturu_matavimas_1();}
-/* +++++++++++++++++++++++++++ ANTRAS LYGIS ++++++++++++++++++++++++++++++++++++ 
-Akumuliacinės viršus, boilerio viršus                                           */ 
+/* +++++++++++++++++++++++++++ ANTRAS LYGIS ++++++++++++++++++++++++++++++++++++ */ 
 if (millis() > temperaturu_matavimo_laikas_2 ) { 
   temperaturu_matavimo_laikas_2 = millis() + temperaturu_matavimo_pertrauka_2;
   Temperaturu_matavimas_2();}
-/* +++++++++++++++++++++++++++ TREČIAS LYGIS ++++++++++++++++++++++++++++++++++++ 
-Akumuliacinės apačia, boilerio apačia, kambario ir lauko temperatūros            */ 
+/* +++++++++++++++++++++++++++ TREČIAS LYGIS ++++++++++++++++++++++++++++++++++++ */ 
 if (millis() > temperaturu_matavimo_laikas_3 ) { 
   temperaturu_matavimo_laikas_3 = millis() + temperaturu_matavimo_pertrauka_3;
   Temperaturu_matavimas_3();}
 
 // === LAIKRODIS ===========================================================
 
-//showAlarmTime(Aliarmas_1);
-//Serial.print(hour());Serial.print(':');Serial.print(minute());Serial.print(':');Serial.println(second());
 
-
-bBlink = ((bBlink) ? false : true);
-//RTC.read(tm);
-lcd.setCursor(0,3);
-
-lcd.print(year());
-printDigits(month(),'.');
-printDigits(day(),'.');
-
-printDigits(hour(),' ');
-if (bBlink)
-       lcd.print(':');
-    else
-       lcd.print(' ');
-if(minute() < 10) lcd.print('0');
-  lcd.print(minute());
-lcd.print(' ');
-//  if(day() < 10) lcd.print('0');
-//  lcd.print(daysOfWeek[weekday()]);
-  lcd.print(weekday());
-//printDigits(minute(),':');
-//printDigits(second(),':'); 
-
-/*
 //RTC.read(tm);
 lcd.setCursor(0,3);
 
@@ -1120,34 +962,5 @@ printDigits(day(),'.');
 printDigits(hour(),' ');
 printDigits(minute(),':');
 printDigits(second(),':'); 
-*/
 Alarm.delay(0);
 }// === PABAIGA ===========================================================
-void Boilerio_Termostatas_1()
-{ // Jei boilerio viršus šaltesnis negu nustatyta ijungimo temperatura, arba boilerio viršus šaltesnis
-// už boilerio išjungimo temperatūrą, ir ijungtas termostatas, tai jungiamas elektrinis boilerio sildymas
-if ((BV < b_ON_T ) && (B_termostat_ON == true)){
-       digitalWrite(B_termostatas, LOW); 
-       B_termostat_status = true; // zyme, kad termostatas dabar veikia
-       B_termostat_ON = false;    // kai ijungiamas elektrinis boilerio sildymas, pakeiciama ijungimo zyme
-#ifdef DEBUGboileris
-Serial.print("Ijungtas boilerio sildymas elektra iki- "); 
-Serial.print(b_OFF_T);Serial.print(char(186));Serial.println("C");
-Serial.println();
-#endif 
-   }
-// Jei boilerio virsuje yra tiek šilumos, kiek nustatyta,  tai termostatas isjungia boilerio sildyma elektra
-     if ((BV >= b_OFF_T)  && (B_termostat_status == true)) { 
-       digitalWrite(B_termostatas, HIGH);
-       B_termostat_status = false;
-#ifdef DEBUGboileris
-Serial.println("Ijungtas boilerio sildymas elektra I*S*J*U*N*G*T*A*S");
-#endif      
-   }     
-  //////////////////////////////////////////////
-  Serial.println("*****************************");
-  Serial.println("Aliarmas suveike is atminties");
-  Serial.println("*****************************");
-  digitalWrite(13, HIGH);
-}  
-
