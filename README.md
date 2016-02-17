@@ -11,10 +11,11 @@ Akumuliacinės talpos valdymas, boilerio valdymas,
 saulės kolektoriaus valdymas, duomenų siuntimas ir grafikų braižymas internete.
 
 --------------------
-Meniu pvz.:
-http://wiring.org.co/reference/libraries/MenuItem/MenuItem_addBefore_.html
-http://wiring.org.co/learning/libraries/hellomenu.html
-http://majsterkowo.pl/forum/menubackend-jak-sie-w-nim-odnalezc-t1549.html
+Meniu pvz.:<br>
+Menu samples:<br>
+http://wiring.org.co/reference/libraries/MenuItem/MenuItem_addBefore_.html<br>
+http://wiring.org.co/learning/libraries/hellomenu.html<br>
+<h3>http://majsterkowo.pl/forum/menubackend-jak-sie-w-nim-odnalezc-t1549.html</h3><br>
 
 
 ================================================================================
