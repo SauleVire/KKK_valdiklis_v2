@@ -1,3 +1,4 @@
+// Patikrinta su Arduino 1.6.12
 // ============= KKK valdinlis v2.1 ===============================================
 
 #include <DS1307RTC.h>
@@ -9,6 +10,8 @@
  #include <LiquidCrystal.h>         
   #include <OneWire.h>
    #include <DallasTemperature.h>
+   // Arduino EEPROMex library
+   // https://github.com/PaulStoffregen/Arduino-Libraries/tree/master/EEPROMEx
    #include <EEPROMex.h>
 //    #include <EEPROM.h>
 //     #include <PID_v1.h>
@@ -79,6 +82,9 @@ char *eilute3;
 */
 // --- tworzymy wszystkie opcje Menu: ---------------------------------------
 // de facto tworzymy obiekty klasy MenuItem, które dziedziczą po klasie MenuBackend
+    void menuChangeEvent(MenuChangeEvent changed);
+    void menuUseEvent(MenuUseEvent used);
+
 MenuBackend menu = MenuBackend(menuUseEvent,menuChangeEvent); // konstruktor 
    //                        ("                ")
    MenuItem P1 =  MenuItem("NUSTATYMAI        ",1);
