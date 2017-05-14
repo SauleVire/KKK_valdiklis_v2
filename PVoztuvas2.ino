@@ -11,7 +11,7 @@ boolean PV_stop = true;
 #define PV_pilno_atidarymo_trukme 2500
 unsigned long PV_pilno_atidarymo_laikas;
 unsigned long PV_darinejimo_laikas;
-/* *********** PAMAISYMO VOZTUVO SIURBLIO ĮJUNGIMAS ******************** */
+/* ---PAMAISYMO VOZTUVO SIURBLIO ĮJUNGIMAS------- */
 void PamaisymoVoztuvoSiusblys(){
 if ((KI > pv_ON_T || AV > pv_ON_T) && (PV_siurblys == false)){ // Jei katilo išėjime temperatūra pakyla iki užduotos
     digitalWrite(PVsiurblys, LOW); // siurblys įjungiamas

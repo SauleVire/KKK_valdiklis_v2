@@ -16,8 +16,8 @@ unsigned long temperaturu_matavimo_laikas_2 = 0;
 unsigned long temperaturu_matavimo_laikas_3 = 0;
 unsigned long SK_siurblio_junginejimas = 0;
 #define temperaturu_matavimo_pertrauka_1 5000
-#define temperaturu_matavimo_pertrauka_2 30000
-#define temperaturu_matavimo_pertrauka_3 60000
+#define temperaturu_matavimo_pertrauka_2 7000
+#define temperaturu_matavimo_pertrauka_3 9000
 #define moto_voztuvu_uzdarymo_fpv_reziflaikas 5000
 
 unsigned long Ekrano_pasvietimo_ijungimo_laikas;

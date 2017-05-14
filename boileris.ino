@@ -19,8 +19,9 @@ Serial.print("I isejime temperatura- ");Serial.print(KI);Serial.print(char(186))
    }}
 // Jei boilerio viršuje yra tiek šilumos, kiek nustatyta, arba katilo išėjime yra mažiau šilumos, 
 // negu boilerio viršuje, tai siurblys išjungiamas
-     if ((BV > b_OFF_T || KI < BV + 8) && (B_siurblys == true)) { 
-       digitalWrite(BSiurblys, HIGH); B_siurblys = false;
+     if ((BV >= b_OFF_T || KI <= BV + 8) && (B_siurblys == true)) { 
+       digitalWrite(BSiurblys, HIGH); 
+       B_siurblys = false;
 #ifdef DEBUGboileris
 Serial.println("Boilerio siublys ISUNGTAS ***_OFF_***__PRIEZASTIS:");
 Serial.print("B isjungimo temperatura- ");Serial.print(b_OFF_T);Serial.print(char(186));Serial.println("C");
@@ -37,9 +38,9 @@ void Boilerio_termostatas(){
 if ((BV < b_ON_T ) && (B_termostat_ON == true)){
        digitalWrite(B_termostatas, LOW); 
        B_termostat_status = true; // zyme, kad termostatas dabar veikia
-       B_termostat_ON = false;    // kai ijungiamas elektrinis boilerio sildymas, pakeiciama ijungimo zyme
+//     B_termostat_ON = false;    // kai ijungiamas elektrinis boilerio sildymas, pakeiciama ijungimo zyme
 #ifdef DEBUGboileris
-Serial.print("Ijungtas boilerio sildymas elektra iki- "); 
+Serial.print("Boilerio sildymas elektra I_J_U_N_G_T_A_S ***_ON_ *** iki- "); 
 Serial.print(b_OFF_T);Serial.print(char(186));Serial.println("C");
 Serial.println();
 #endif 
@@ -49,7 +50,8 @@ Serial.println();
        digitalWrite(B_termostatas, HIGH);
        B_termostat_status = false;
 #ifdef DEBUGboileris
-Serial.println("Ijungtas boilerio sildymas elektra I*S*J*U*N*G*T*A*S");
+Serial.println("Ijungtas boilerio sildymas elektra I*S*J*U*N*G*T*A*S ***_OFF_ *** nuo- ");
+Serial.print(BV);Serial.print(char(186));Serial.println("C");
 #endif      
    }     
 }

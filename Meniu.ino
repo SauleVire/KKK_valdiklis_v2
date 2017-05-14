@@ -3,7 +3,7 @@
         lcd.setCursor(0,2);lcd.write(7);     // wyswietlamy nasz symbol strzalki g�ra-d�l
         lcd.setCursor(1,2);lcd.print(tekstas1); //("Nustatyta.temp=   "); // tekst dla uzytkownika
         lcd.setCursor(16,2);lcd.print(KeiciamaReiksme); // wyswietlamy akt. temperature
-        int  veiksmas=-1; delay(1000);         // klaviaturos_pasikeitimas ienna pomocnicza, sterujaca dla petli while
+        int  veiksmas=-1; delay(333);         //buvo delay (1000) klaviaturos_pasikeitimas ienna pomocnicza, sterujaca dla petli while
                                            // jesli nie puscisz klawisza OK w ciagu 1 sek. to powr�t do menu    
         while(veiksmas!=4)                   // ta petla trwa tak dlugo az wcisniesz klawisz OK  
          {
