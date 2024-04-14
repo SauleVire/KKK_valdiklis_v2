@@ -75,10 +75,10 @@ Serial.println("Mixing valve, started OPENING, shortened");
         PV_stop = false; // we note that the valve is already moving
         PV_pauze = millis() + PV_darinejimas * 100;
 //        PV_atidarinejimo_laikas = millis() + PV_atidarinejimo_pertrauka; // remembering the time when the opening is activated
-//        PV_atidarytas = true; // pažymima, kad vožtuvas nebeuždarytas
-        PV_atidarinejamas = true; // pažymima, kad vožtuvas jau atidarinėjamas
-        digitalWrite(PVuzdarymas, HIGH); // signalas vožtuvui atidaryti
-        digitalWrite(PVatidarymas, LOW); // signalas vožtuvui atidaryti
+//        PV_atidarytas = true; // indicates that the valve is no longer closed .. pažymima, kad vožtuvas nebeuždarytas
+        PV_atidarinejamas = true; // indicates that the valve is now opening .. pažymima, kad vožtuvas jau atidarinėjamas
+        digitalWrite(PVuzdarymas, HIGH); // signal to close the valve .. signalas vožtuvui uždaryti
+        digitalWrite(PVatidarymas, LOW); // signal to open the valve .. signalas vožtuvui atidaryti
  }
 #ifdef DEBUGpv
 Serial.print("MV_error= ");  Serial.println(pv_klaida);
@@ -104,53 +104,53 @@ Serial.print("Time- ");Serial.print(millis() / 1000);Serial.println(" s.");
 Serial.println("MV PAUSE, will last 0 s., temperature maintained too high");
 #endif#endif
 } else {
-//      PV_pauze = millis() + PV_pauzes_pertrauka; // tiek laiko turi testis pauzė
-      PV_atidarinejimo_laikas = millis() + (PV_pauzes_pertrauka * 100); // tiek laiko turi testis pauzė
-      PV_uzdarinejimo_laikas = millis() + (PV_pauzes_pertrauka * 100); // tiek laiko turi testis pauzė
-      PV_stop = true; // pasižymime, kad vožtuvas jau stovi
-      PV_atidarinejamas = false; // pažymima, kad vožtuvas jau nebeatidarinėjamas
-      PV_uzdarinejamas = false; // pažymima, kad vožtuvas jau nebeuždarinėjamas
-        digitalWrite(PVuzdarymas, HIGH); // signalas vožtuvui sustabdyti
-        digitalWrite(PVatidarymas, HIGH); // signalas vožtuvui sustabdyti
+//      PV_pauze = millis() + PV_pauzes_pertrauka; // this is how long the pause has to last .. tiek laiko turi testis pauzė
+      PV_atidarinejimo_laikas = millis() + (PV_pauzes_pertrauka * 100); // this is how long the pause has to last .. tiek laiko turi testis pauzė
+      PV_uzdarinejimo_laikas = millis() + (PV_pauzes_pertrauka * 100); // this is how long the pause has to last .. tiek laiko turi testis pauzė
+      PV_stop = true; // we note that the valve is already standing .. pasižymime, kad vožtuvas jau stovi
+      PV_atidarinejamas = false; // indicates that the valve is no longer opening .. pažymima, kad vožtuvas jau nebeatidarinėjamas
+      PV_uzdarinejamas = false; // indicates that the valve is no longer closing .. pažymima, kad vožtuvas jau nebeuždarinėjamas
+        digitalWrite(PVuzdarymas, HIGH); // signal to stop the valve .. signalas vožtuvui sustabdyti
+        digitalWrite(PVatidarymas, HIGH); // signal to stop the valve .. signalas vožtuvui sustabdyti
 #ifdef DEBUGpv
-Serial.print("laikas- ");Serial.print(millis() / 1000);Serial.println(" s.");
-Serial.print("Darinejimas prisides po- "); Serial.print(PV_pauzes_pertrauka * 100 / 1000); Serial.println(" s.");
+Serial.print("Time- ");Serial.print(millis() / 1000);Serial.println(" s.");
+Serial.print("valve movement will start after- "); Serial.print(PV_pauzes_pertrauka * 100 / 1000); Serial.println(" s.");
 #endif
 }
 
    }
 /* ********* JEI TEMPERATŪRA KYLA IR VOŽTUVĄ REIKIA UŽDARYTI ***************** */
-   // JEI TEMPERATŪRA KYLA IR VOŽTUVĄ REIKIA UŽDARYTI
+   // IF THE TEMPERATURE RISES AND THE VALVE NEEDS TO BE CLOSED
  //Serial.print("pv_palaikoma_T + pv_palaikoma_riba_T= ");  Serial.println(pv_palaikoma_T + pv_palaikoma_riba_T);  
     if (PV >= pv_palaikoma_T + pv_palaikoma_riba_T && PV_stop == true && PV_atidarinejamas == false  && millis() > PV_uzdarinejimo_laikas){
       pv_klaida = PV - pv_palaikoma_T - pv_palaikoma_riba_T;
       if (pv_klaida < 2){
-        PV_stop = false; // pasižymime, kad vožtuvas jau juda
+        PV_stop = false; // we note that the valve is already moving .. pasižymime, kad vožtuvas jau juda
         PV_uzdarinejamas = true;
-//        PV_uzdarinejimo_laikas = millis() + PV_uzdarinejimo_pertrauka; // atsimenamas atidarymo įjungimo laikas
+//        PV_uzdarinejimo_laikas = millis() + PV_uzdarinejimo_pertrauka; // remembering the time when the opening is activated .. atsimenamas atidarymo įjungimo laikas
         PV_pauze = millis() + (PV_darinejimas * 100) - 2000 + (pv_klaida * 1000);
-        PV_atidarytas = true; // pažymima, kad vožtuvas nebeuždarytas
-      digitalWrite(PVatidarymas, HIGH); // stabdomas atidarymas
-      digitalWrite(PVuzdarymas, LOW); // pradedamas uždarymas
+        PV_atidarytas = true; // indicates that the valve is no longer closed .. pažymima, kad vožtuvas nebeuždarytas
+      digitalWrite(PVatidarymas, HIGH); // stop opening .. stabdomas atidarymas
+      digitalWrite(PVuzdarymas, LOW); // closure begins .. pradedamas uždarymas
 #ifdef DEBUGpv
-Serial.print("pv_klaida= ");  Serial.println(pv_klaida);
-Serial.print("laikas- ");  Serial.print(millis() / 1000); Serial.println(" s.");
-Serial.print("Pause prasides po - ");  Serial.print((PV_darinejimas * 100 - 2000 + (pv_klaida * 1000)) / 1000); Serial.println(" s., patrumpintas");
-Serial.println("Pamaisymo voztuvas, pradetas UZDARINEJIMAS, patrumpintas"); 
+Serial.print("pv_klaida= ");  Serial.println(MV_error);
+Serial.print("Time- ");  Serial.print(millis() / 1000); Serial.println(" s.");
+Serial.print("The pause will start after- ");  Serial.print((PV_darinejimas * 100 - 2000 + (pv_klaida * 1000)) / 1000); Serial.println(" s., Short version");
+Serial.println("Mixing valve, started CLOSED, shortened"); 
 #endif
       }else{
-        PV_stop = false; // pasižymime, kad vožtuvas jau juda
+        PV_stop = false; // we note that the valve is already moving .. pasižymime, kad vožtuvas jau juda
         PV_uzdarinejamas = true;
-//        PV_uzdarinejimo_laikas = millis() + PV_uzdarinejimo_pertrauka; // atsimenamas atidarymo įjungimo laikas
+//        PV_uzdarinejimo_laikas = millis() + PV_uzdarinejimo_pertrauka; // remembering the time when the opening is activated .. atsimenamas atidarymo įjungimo laikas
         PV_pauze = millis() + PV_darinejimas * 100;
-        PV_atidarytas = true; // pažymima, kad vožtuvas nebeuždarytas
-      digitalWrite(PVatidarymas, HIGH); // stabdomas atidarymas
-      digitalWrite(PVuzdarymas, LOW); // pradedamas uždarymas
+        PV_atidarytas = true; // indicates that the valve is no longer closed .. pažymima, kad vožtuvas nebeuždarytas
+      digitalWrite(PVatidarymas, HIGH); // stop opening .. stabdomas atidarymas
+      digitalWrite(PVuzdarymas, LOW); // closure begins .. pradedamas uždarymas
 #ifdef DEBUGpv
-Serial.print("pv_klaida= ");  Serial.println(pv_klaida);
-Serial.print("laikas- ");  Serial.print(millis() / 1000); Serial.println(" s.");
-Serial.print("Pause prasides po- ");  Serial.print(PV_darinejimas * 100 / 1000); Serial.println(" s.");
-Serial.println("Pamaisymo voztuvas, pradetas UZDARINEJIMAS"); 
+Serial.print("pv_klaida= ");  Serial.println(MV_error);
+Serial.print("Time- ");  Serial.print(millis() / 1000); Serial.println(" s.");
+Serial.print("The pause will start after- ");  Serial.print(PV_darinejimas * 100 / 1000); Serial.println(" s.");
+Serial.println("Mixing valve, started CLOSING"); 
 #endif
       }
 
