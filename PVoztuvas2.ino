@@ -3,7 +3,7 @@
 // KI- boiler output temperature
 // AV- Accumulation capacity top temperature  (Storage tank)
 // pv_palaikoma_T- MV maintained temperature
-// pv_palaikoma_riba_T- MV maintained limit temperature
+// pv_palaikoma_riba_T- MV acceptable temperature 
 // PV_uzdarinejamas- MV closing
 // PV_atidarinejimo_laikas- MV opening time
 // pv_klaida- MV error
